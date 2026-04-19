@@ -9,8 +9,15 @@ function getAuth() {
 
   const scopes = ['https://www.googleapis.com/auth/calendar.events'];
 
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-    const creds = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  const jsonInline =
+    process.env.GOOGLE_SERVICE_ACCOUNT_JSON ||
+    (process.env.GOOGLE_SERVICE_ACCOUNT_PATH &&
+    process.env.GOOGLE_SERVICE_ACCOUNT_PATH.trim().startsWith('{')
+      ? process.env.GOOGLE_SERVICE_ACCOUNT_PATH
+      : null);
+
+  if (jsonInline) {
+    const creds = JSON.parse(jsonInline);
     authClient = new google.auth.JWT({
       email: creds.client_email,
       key: creds.private_key,

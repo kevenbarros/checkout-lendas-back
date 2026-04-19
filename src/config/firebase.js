@@ -11,13 +11,20 @@ function initFirebase() {
 
   let credential;
 
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+  const jsonInline =
+    process.env.FIREBASE_SERVICE_ACCOUNT_JSON ||
+    (process.env.FIREBASE_SERVICE_ACCOUNT_PATH &&
+    process.env.FIREBASE_SERVICE_ACCOUNT_PATH.trim().startsWith('{')
+      ? process.env.FIREBASE_SERVICE_ACCOUNT_PATH
+      : null);
+
+  if (jsonInline) {
     try {
-      const parsed = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+      const parsed = JSON.parse(jsonInline);
       credential = admin.credential.cert(parsed);
     } catch (err) {
       throw new Error(
-        'FIREBASE_SERVICE_ACCOUNT_JSON inválido. Verifique se é um JSON válido em uma única linha.'
+        'Credencial Firebase inválida. Verifique se é um JSON válido em uma única linha.'
       );
     }
   } else {
