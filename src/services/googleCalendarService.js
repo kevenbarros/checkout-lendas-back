@@ -17,7 +17,22 @@ function getAuth() {
       : null);
 
   if (jsonInline) {
-    const creds = JSON.parse(jsonInline);
+    let raw = jsonInline.trim();
+    if (
+      (raw.startsWith('"') && raw.endsWith('"')) ||
+      (raw.startsWith("'") && raw.endsWith("'"))
+    ) {
+      raw = raw.slice(1, -1);
+    }
+    let creds;
+    try {
+      creds = JSON.parse(raw);
+    } catch {
+      creds = JSON.parse(raw.replace(/\r?\n/g, '\\n'));
+    }
+    if (creds.private_key && creds.private_key.includes('\\n')) {
+      creds.private_key = creds.private_key.replace(/\\n/g, '\n');
+    }
     authClient = new google.auth.JWT({
       email: creds.client_email,
       key: creds.private_key,

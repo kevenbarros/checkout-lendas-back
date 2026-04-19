@@ -47,6 +47,9 @@ function initFirebase() {
         );
       }
     }
+    if (parsed.private_key && parsed.private_key.includes('\\n')) {
+      parsed.private_key = parsed.private_key.replace(/\\n/g, '\n');
+    }
     credential = admin.credential.cert(parsed);
   } else {
     const filePath = path.resolve(
