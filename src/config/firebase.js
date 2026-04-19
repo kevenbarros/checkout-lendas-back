@@ -19,14 +19,35 @@ function initFirebase() {
       : null);
 
   if (jsonInline) {
-    try {
-      const parsed = JSON.parse(jsonInline);
-      credential = admin.credential.cert(parsed);
-    } catch (err) {
-      throw new Error(
-        'Credencial Firebase inválida. Verifique se é um JSON válido em uma única linha.'
-      );
+    let raw = jsonInline.trim();
+    if (
+      (raw.startsWith('"') && raw.endsWith('"')) ||
+      (raw.startsWith("'") && raw.endsWith("'"))
+    ) {
+      raw = raw.slice(1, -1);
     }
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err1) {
+      try {
+        parsed = JSON.parse(raw.replace(/\r?\n/g, '\\n'));
+      } catch (err2) {
+        console.error('[firebase] JSON.parse falhou:', err1.message);
+        console.error(
+          '[firebase] primeiros 80 chars recebidos:',
+          JSON.stringify(raw.slice(0, 80))
+        );
+        console.error(
+          '[firebase] últimos 40 chars recebidos:',
+          JSON.stringify(raw.slice(-40))
+        );
+        throw new Error(
+          'Credencial Firebase inválida. Verifique se é um JSON válido em uma única linha.'
+        );
+      }
+    }
+    credential = admin.credential.cert(parsed);
   } else {
     const filePath = path.resolve(
       process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './serviceAccountKey.json'
