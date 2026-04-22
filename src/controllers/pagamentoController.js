@@ -119,17 +119,38 @@ async function criarPagamento(req, res, next) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const backendPublicUrl = process.env.BACKEND_PUBLIC_URL;
 
+    const eventStartISO = new Date(
+      `${slot.data}T${slot.hora}:00-03:00`
+    ).toISOString();
+    const eventEndISO = new Date(
+      new Date(`${slot.data}T${slot.hora}:00-03:00`).getTime() + 60 * 60 * 1000
+    ).toISOString();
+
     const preferenceData = {
       items: [
         {
           id: reservaCriada.id,
           title: `Escape Room - ${slot.data} ${slot.hora} (${quantidade} pessoas)`,
           description: `Reserva para ${nome}`,
+          category_id: 'services',
           quantity: 1,
           currency_id: 'BRL',
           unit_price: Number(total.toFixed(2)),
+          event_date: eventStartISO,
         },
       ],
+      additional_info: {
+        items: [
+          {
+            id: reservaCriada.id,
+            title: `Escape Room - ${slot.data} ${slot.hora}`,
+            category_id: 'services',
+            quantity: 1,
+            unit_price: Number(total.toFixed(2)),
+            event_date: eventStartISO,
+          },
+        ],
+      },
       payer: {
         name: nome,
         email,
